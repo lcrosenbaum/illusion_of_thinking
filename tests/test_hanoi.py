@@ -52,3 +52,24 @@ def test_reset(hanoi):
     hanoi.reset()
     assert hanoi.state == ([3, 2, 1], [], [])
     assert hanoi.is_valid_state()
+
+
+def test_reset_with_valid_state(hanoi):
+    # Valid state: disk 1 on peg 2, disks 2 and 3 on peg 0
+    valid_state = ([3, 2], [], [1])
+    hanoi.reset(valid_state)
+    assert hanoi.state == valid_state
+    assert hanoi.is_valid_state()
+
+
+def test_reset_with_invalid_state(hanoi):
+    # Invalid state: disk 2 on top of disk 1 (wrong order)
+    invalid_state = ([1, 2, 3], [], [])
+    with pytest.raises(ValueError):
+        hanoi.reset(invalid_state)
+    # State should remain unchanged (should still be initial state)
+    assert hanoi.state == ([3, 2, 1], [], [])
+
+    invalid_state = ([4, 3, 2, 1], [], [])
+    with pytest.raises(ValueError):
+        hanoi.reset(invalid_state)

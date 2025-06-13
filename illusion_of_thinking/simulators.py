@@ -63,9 +63,12 @@ class Simulator(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, state: Optional[Any] = None) -> None:
         """
-        Reset the simulator to the initial state.
+        Reset the simulator to the initial state or to a provided state.
+
+        Args:
+            state: Optional state to reset to. If None, reset to default initial state.
         """
         pass
 
@@ -108,14 +111,27 @@ class TowerOfHanoiSimulator(Simulator):
     def __init__(self, N: int):
         super().__init__(N)
 
-    def reset(self) -> None:
+    def reset(self, state: Optional[Tuple[List[int], List[int], List[int]]] = None) -> None:
         """
-        Reset the Tower of Hanoi puzzle to its initial state.
-        All disks on the first peg.
+        Reset the Tower of Hanoi puzzle to its initial state or to a provided state.
+        All disks on the first peg by default.
+
+        Args:
+            state: Optional state to reset to. If None, reset to default initial state.
+
+        Raises:
+            ValueError: If the provided state is not valid.
         """
-        # Create initial state with all disks on the first peg
-        # Order: largest disk (N) at bottom, smallest disk (1) at top
-        self.state = ([i for i in range(self.N, 0, -1)], [], [])
+        if state is not None:
+            old_state = self.state
+            self.state = state
+            if not self.is_valid_state():
+                self.state = old_state
+                raise ValueError("Provided state is not a valid Tower of Hanoi state.")
+        else:
+            # Create initial state with all disks on the first peg
+            # Order: largest disk (N) at bottom, smallest disk (1) at top
+            self.state = ([i for i in range(self.N, 0, -1)], [], [])
 
     def is_valid_move(self, move: Tuple[int, int, int]) -> bool:
         """
@@ -272,20 +288,33 @@ class RiverCrossingSimulator(Simulator):
         self.agents = [f"A_{i}" for i in range(1, N + 1)]
         self.reset()
 
-    def reset(self) -> None:
+    def reset(self, state: Optional[Tuple[int, Dict[str, int]]] = None) -> None:
         """
-        Reset the river crossing puzzle to its initial state.
-        All actors and agents on the left bank (0), boat on left bank (0).
-        """
-        # State format: (boat_position, {entity: position})
-        # Position: 0 = left bank, 1 = right bank
-        entity_positions = {}
-        for actor in self.actors:
-            entity_positions[actor] = 0
-        for agent in self.agents:
-            entity_positions[agent] = 0
+        Reset the river crossing puzzle to its initial state or to a provided state.
+        All actors and agents on the left bank (0), boat on left bank (0) by default.
 
-        self.state = (0, entity_positions)  # (boat_position, entity_positions)
+        Args:
+            state: Optional state to reset to. If None, reset to default initial state.
+
+        Raises:
+            ValueError: If the provided state is not valid.
+        """
+        if state is not None:
+            old_state = self.state
+            self.state = state
+            if not self.is_valid_state():
+                self.state = old_state
+                raise ValueError("Provided state is not a valid River Crossing state.")
+        else:
+            # State format: (boat_position, {entity: position})
+            # Position: 0 = left bank, 1 = right bank
+            entity_positions = {}
+            for actor in self.actors:
+                entity_positions[actor] = 0
+            for agent in self.agents:
+                entity_positions[agent] = 0
+
+            self.state = (0, entity_positions)  # (boat_position, entity_positions)
 
     def is_valid_move(self, move: List[str]) -> bool:
         """

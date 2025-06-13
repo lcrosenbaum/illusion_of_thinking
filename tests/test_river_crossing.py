@@ -154,3 +154,26 @@ def test_goal_reached():
     # Move A_1 and a_1 to right bank
     assert sim.execute_move(["A_1", "a_1"])
     assert sim.is_goal_reached()
+
+
+def test_reset_with_valid_and_invalid_state(make_river_crossing):
+    sim = make_river_crossing(N=2, k=2)
+    # Valid state: all on right bank, boat on right
+    valid_state = (1, {"a_1": 1, "A_1": 1, "a_2": 1, "A_2": 1})
+    sim.reset(valid_state)
+    assert sim.state == valid_state
+    assert sim.is_valid_state()
+
+    # Invalid state: actor a_1 with agent A_2, but not with own agent A_1
+    invalid_state = (0, {"a_1": 1, "A_1": 0, "a_2": 0, "A_2": 1})
+    with pytest.raises(ValueError):
+        sim.reset(invalid_state)
+    # State should remain unchanged (should still be valid_state)
+    assert sim.state == valid_state
+
+    # Invalid state: actor a_1 with agent A_2, but not with own agent A_1
+    invalid_state = (0, {"a_1": 0, "A_1": 0, "a_2": 0, "A_2": 0, "a_3": 0, "A_3": 0})
+    with pytest.raises(ValueError):
+        sim.reset(invalid_state)
+    # State should remain unchanged (should still be valid_state)
+    assert sim.state == valid_state
