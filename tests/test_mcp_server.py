@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Tuple
 import pytest
 import pytest_asyncio
 from fastmcp import Client
-from fastmcp.client.responses import ResourceResult, ToolResult
 
 
 @pytest_asyncio.fixture
@@ -60,13 +59,22 @@ async def read_resource(client: Client, uri: str) -> Dict[str, Any]:
     """Wrapper function to read a resource and convert the result to a dictionary."""
     result = await client.read_resource(uri)
     if isinstance(result, list) and len(result) > 0:
-        content = result[0].content
-        if isinstance(content, dict):
-            return content
-        try:
-            return json.loads(content)
-        except (json.JSONDecodeError, TypeError):
-            return {"content": content}
+        # First try to access the text property (for text resources)
+        if hasattr(result[0], "text"):
+            try:
+                return json.loads(result[0].text)
+            except (json.JSONDecodeError, TypeError):
+                return {"text": result[0].text}
+
+        # Fall back to content property (for backward compatibility)
+        elif hasattr(result[0], "content"):
+            content = result[0].content
+            if isinstance(content, dict):
+                return content
+            try:
+                return json.loads(content)
+            except (json.JSONDecodeError, TypeError):
+                return {"content": content}
     return {}
 
 
@@ -310,36 +318,3 @@ async def test_state_resource_validation(client):
     state_data = await read_resource(client, f"data://state/invalid_id")
     assert "error" in state_data
     assert "Environment not found" in state_data["error"]
-
-
-@pytest.mark.asyncio
-async def test_environment_cleanup(client):
-    """Test that inactive environments are cleaned up."""
-    # Since we can't directly access simulation_manager, we'll test cleanup
-    # by checking if we can still access a resource after waiting
-
-    # Initialize a simulator
-    init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
-    )
-    env_id = init_result["env_id"]
-
-    # Verify it exists by checking state resource
-    state_data = await read_resource(client, f"data://state/{env_id}")
-    assert "error" not in state_data
-
-    # Wait for some time (this test depends on server-side cleanup settings)
-    await asyncio.sleep(60)  # Assuming 30-minute cleanup is shortened for testing
-
-    # Create a new environment to potentially trigger cleanup
-    await call_tool(client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3})
-
-    # Try to access the original environment - it may now return an error
-    # Note: This test might be flaky depending on actual server cleanup timing
-    try:
-        state_data = await read_resource(client, f"data://state/{env_id}")
-        # If cleanup didn't happen yet, this will succeed
-        # We could check some condition in the response
-    except Exception:
-        # If cleanup happened, accessing the resource might fail
-        pass

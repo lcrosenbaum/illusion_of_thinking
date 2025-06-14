@@ -5,20 +5,15 @@ This module implements an MCP server that provides a protocol for interacting
 with various simulator environments.
 """
 
-import asyncio
 import logging
-import secrets
 import time
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-# Import FastMCP 2.0 components
 from fastmcp import FastMCP
 
-# Import simulators
 from illusion_of_thinking.simulators import RiverCrossingSimulator, Simulator, TowerOfHanoiSimulator
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -50,7 +45,7 @@ class SimulationManager:
     def __init__(self):
         """Initialize the simulation manager."""
         self.environments: Dict[str, SimulationEnvironment] = {}
-        self.inactive_threshold: int = 30 * 60  # 30 minutes in seconds
+        self.inactive_threshold: int = 180  # Two minutes in seconds
 
     def create_environment(
         self, simulator_type: str, simulator_params: Dict[str, Any]
