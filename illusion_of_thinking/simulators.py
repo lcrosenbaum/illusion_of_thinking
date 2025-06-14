@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class Simulator(ABC):
@@ -125,19 +125,25 @@ class TowerOfHanoiSimulator(Simulator):
     def __init__(self, N: int):
         super().__init__(N)
 
-    def reset(self, state: Optional[Tuple[List[int], List[int], List[int]]] = None) -> None:
+    def reset(
+        self, state: Optional[Union[Tuple[List[int], List[int], List[int]], List[List[int]]]] = None
+    ) -> None:
         """
         Reset the Tower of Hanoi puzzle to its initial state or to a provided state.
         All disks on the first peg by default.
 
         Args:
             state: Optional state to reset to. If None, reset to default initial state.
+                  Can be either a Tuple or a List of lists representing the pegs
 
         Raises:
             ValueError: If the provided state is not valid.
         """
         if state is not None:
             old_state = self.state
+            # Cast list to tuple if needed
+            if isinstance(state, list):
+                state = tuple(state)
             self.state = state
             if not self.is_valid_state():
                 self.state = old_state
@@ -315,19 +321,26 @@ class RiverCrossingSimulator(Simulator):
         params["k"] = self.k
         return params
 
-    def reset(self, state: Optional[Tuple[int, Dict[str, int]]] = None) -> None:
+    def reset(
+        self,
+        state: Optional[Union[Tuple[int, Dict[str, int]], List[Union[int, Dict[str, int]]]]] = None,
+    ) -> None:
         """
         Reset the river crossing puzzle to its initial state or to a provided state.
         All actors and agents on the left bank (0), boat on left bank (0) by default.
 
         Args:
             state: Optional state to reset to. If None, reset to default initial state.
+                  Can be either a Tuple or a List in the format (boat_position, entity_positions)
 
         Raises:
             ValueError: If the provided state is not valid.
         """
         if state is not None:
             old_state = self.state
+            # Cast list to tuple if needed
+            if isinstance(state, list):
+                state = tuple(state)
             self.state = state
             if not self.is_valid_state():
                 self.state = old_state
@@ -464,14 +477,11 @@ class RiverCrossingSimulator(Simulator):
 
                     if entity_positions[agent] == actor_pos:
                         # Another agent is present with this actor
-                        # Actor's own agent must also be present
                         if entity_positions[actor_agent] != actor_pos:
-                            return False
-
-            return True
-
+                            return False  # Actor's own agent must also be present
         except Exception:
             return False
+        return True
 
     def is_goal_reached(self) -> bool:
         """

@@ -29,3 +29,7 @@ poetry shell
 # Run tests
 poetry run pytest
 ```
+
+## MCP Server & API
+
+- [MCP Server Documentation](docs/mcp_server.md): Full details on the Model Context Protocol server, supported tools/resources, and client usage examples.
