@@ -36,9 +36,7 @@ Reset a simulator to its initial or a provided state.
 - **Returns:**
   - `reset_successful`, `current_state`
 
-## Resources
-
-### `state`
+### `get_state`
 Get the current state of a simulator.
 - **Arguments:**
   - `env_id`: Environment ID
@@ -57,9 +55,6 @@ client = MCPClient()
 # Initialize a Tower of Hanoi simulator with 3 disks
 resp = client.call_tool('init_simulator', simulator_type='TowerOfHanoi', N=3)
 env_id = resp['env_id']
-
-# Get the current state
-state = client.call_resource('state', env_id=env_id)
 
 # Execute a move: move disk 1 from peg 0 to peg 2
 move_result = client.call_tool('execute_move', env_id=env_id, move=[1, 0, 2])

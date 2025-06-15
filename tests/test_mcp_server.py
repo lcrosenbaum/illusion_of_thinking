@@ -55,29 +55,6 @@ async def call_tool(client: Client, tool_name: str, args: Dict[str, Any]) -> Dic
     return result_as_dict(result)
 
 
-async def read_resource(client: Client, uri: str) -> Dict[str, Any]:
-    """Wrapper function to read a resource and convert the result to a dictionary."""
-    result = await client.read_resource(uri)
-    if isinstance(result, list) and len(result) > 0:
-        # First try to access the text property (for text resources)
-        if hasattr(result[0], "text"):
-            try:
-                return json.loads(result[0].text)
-            except (json.JSONDecodeError, TypeError):
-                return {"text": result[0].text}
-
-        # Fall back to content property (for backward compatibility)
-        elif hasattr(result[0], "content"):
-            content = result[0].content
-            if isinstance(content, dict):
-                return content
-            try:
-                return json.loads(content)
-            except (json.JSONDecodeError, TypeError):
-                return {"content": content}
-    return {}
-
-
 @pytest.mark.asyncio
 async def test_init_simulator(client):
     """Test initializing a Tower of Hanoi simulator."""
@@ -103,7 +80,7 @@ async def test_init_river_crossing(client):
 
     # Verify the environment exists by checking state resource
     env_id = result["env_id"]
-    state_data = await read_resource(client, f"data://state/{env_id}")
+    state_data = await call_tool(client, "get_state", {"env_id": env_id})
     assert state_data["simulator_type"] == "RiverCrossing"
     assert state_data["simulator_params"] == {"N": 2, "k": 2}
     assert state_data["goal_reached"] is False
@@ -121,7 +98,7 @@ async def test_init_hanoi(client):
 
     # Verify the environment exists by checking state resource
     env_id = result["env_id"]
-    state_data = await read_resource(client, f"data://state/{env_id}")
+    state_data = await call_tool(client, "get_state", {"env_id": env_id})
     assert state_data["simulator_type"] == "TowerOfHanoi"
     assert state_data["simulator_params"] == {"N": 2}
     assert state_data["goal_reached"] is False
@@ -297,7 +274,7 @@ async def test_state_resource(client):
     env_id = init_result["env_id"]
 
     # Access the state resource
-    state_data = await read_resource(client, f"data://state/{env_id}")
+    state_data = await call_tool(client, "get_state", {"env_id": env_id})
 
     assert state_data["simulator_type"] == "TowerOfHanoi"
     assert state_data["simulator_params"] == {"N": 3}
@@ -315,6 +292,6 @@ async def test_state_resource_validation(client):
     )
 
     # Test with invalid env_id
-    state_data = await read_resource(client, f"data://state/invalid_id")
+    state_data = await call_tool(client, "get_state", {"env_id": "invalid_id"})
     assert "error" in state_data
     assert "Environment not found" in state_data["error"]

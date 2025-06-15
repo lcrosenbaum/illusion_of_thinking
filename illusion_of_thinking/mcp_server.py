@@ -14,7 +14,8 @@ from fastmcp import FastMCP
 
 from illusion_of_thinking.simulators import RiverCrossingSimulator, Simulator, TowerOfHanoiSimulator
 
-logging.basicConfig(level=logging.INFO)
+# --- Configure Logging ---
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -205,8 +206,8 @@ def reset_simulator(
         return {"error": str(e), "reset_successful": False}
 
 
-@mcp.resource("data://state/{env_id}")
-def state(env_id: str) -> Dict[str, Any]:
+@mcp.tool
+def get_state(env_id: str) -> Dict[str, Any]:
     """
     Get the current state of a simulator.
 
