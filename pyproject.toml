@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastmcp = "^2.8.0"
+smolagents = {version = "^1.18.0", extras = ["mcp","litellm"]}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
