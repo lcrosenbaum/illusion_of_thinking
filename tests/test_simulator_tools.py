@@ -9,6 +9,7 @@ from typing import Any, Dict, List
 
 import pytest
 
+from illusion_of_thinking.constants import SimulationType
 from illusion_of_thinking.simulator_tools import (
     CreateSimulatorTool,
     ExecuteMovesTool,
@@ -27,19 +28,19 @@ class TestCreateSimulatorTool:
 
     def test_create_tower_of_hanoi(self):
         tool = CreateSimulatorTool()
-        result = tool.forward(simulator_type="TowerOfHanoi", N=3)
+        result = tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=3)
 
         assert "error" not in result
-        assert result["simulator_type"] == "TowerOfHanoi"
+        assert result["simulator_type"] == SimulationType.TowerOfHanoi.name
         assert result["simulator_params"]["N"] == 3
         assert isinstance(get_current_simulator(), TowerOfHanoiSimulator)
 
     def test_create_river_crossing(self):
         tool = CreateSimulatorTool()
-        result = tool.forward(simulator_type="RiverCrossing", N=2, k=2)
+        result = tool.forward(simulator_type=SimulationType.RiverCrossing.name, N=2, k=2)
 
         assert "error" not in result
-        assert result["simulator_type"] == "RiverCrossing"
+        assert result["simulator_type"] == SimulationType.RiverCrossing.name
         assert result["simulator_params"]["N"] == 2
         assert result["simulator_params"]["k"] == 2
         assert isinstance(get_current_simulator(), RiverCrossingSimulator)
@@ -53,14 +54,14 @@ class TestCreateSimulatorTool:
 
     def test_create_invalid_N(self):
         tool = CreateSimulatorTool()
-        result = tool.forward(simulator_type="TowerOfHanoi", N=0)
+        result = tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=0)
 
         assert "error" in result
         assert get_current_simulator() is None
 
     def test_create_invalid_k(self):
         tool = CreateSimulatorTool()
-        result = tool.forward(simulator_type="RiverCrossing", N=2, k=0)
+        result = tool.forward(simulator_type=SimulationType.RiverCrossing.name, N=2, k=0)
 
         assert "error" in result
         assert get_current_simulator() is None
@@ -73,7 +74,7 @@ class TestResetSimulatorTool:
 
         # Create a simulator for testing
         tool = CreateSimulatorTool()
-        tool.forward(simulator_type="TowerOfHanoi", N=3)
+        tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=3)
 
     def test_reset_to_default(self):
         current_simulator = get_current_simulator()
@@ -132,14 +133,14 @@ class TestGetStateTool:
     def test_get_state_tower_of_hanoi(self):
         # Create a Tower of Hanoi simulator
         create_tool = CreateSimulatorTool()
-        create_tool.forward(simulator_type="TowerOfHanoi", N=3)
+        create_tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=3)
 
         # Get the state
         tool = GetStateTool()
         result = tool.forward()
 
         assert "error" not in result
-        assert result["simulator_type"] == "TowerOfHanoi"
+        assert result["simulator_type"] == SimulationType.TowerOfHanoi.name
         assert result["simulator_params"]["N"] == 3
         assert result["state"] == ([3, 2, 1], [], [])
         assert result["goal_reached"] is False
@@ -154,7 +155,7 @@ class TestGetStateTool:
         result = tool.forward()
 
         assert "error" not in result
-        assert result["simulator_type"] == "RiverCrossing"
+        assert result["simulator_type"] == SimulationType.RiverCrossing.name
         assert result["simulator_params"]["N"] == 2
         assert result["simulator_params"]["k"] == 2
         assert result["goal_reached"] is False
@@ -177,7 +178,7 @@ class TestExecuteMovesTool:
     def test_execute_moves_tower_of_hanoi(self):
         # Create a Tower of Hanoi simulator
         create_tool = CreateSimulatorTool()
-        create_tool.forward(simulator_type="TowerOfHanoi", N=3)
+        create_tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=3)
 
         # Define a sequence of moves
         moves = [
@@ -199,7 +200,7 @@ class TestExecuteMovesTool:
     def test_execute_invalid_move_tower_of_hanoi(self):
         # Create a Tower of Hanoi simulator
         create_tool = CreateSimulatorTool()
-        create_tool.forward(simulator_type="TowerOfHanoi", N=3)
+        create_tool.forward(simulator_type=SimulationType.TowerOfHanoi.name, N=3)
 
         # Define a sequence of moves with an invalid move
         moves = [
@@ -244,7 +245,7 @@ class TestExecuteMovesTool:
     def test_execute_invalid_move_river_crossing(self):
         # Create a River Crossing simulator
         create_tool = CreateSimulatorTool()
-        create_tool.forward(simulator_type="RiverCrossing", N=2, k=2)
+        create_tool.forward(simulator_type=SimulationType.RiverCrossing.name, N=2, k=2)
 
         # Define a sequence of moves with an invalid move
         moves = [

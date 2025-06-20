@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from .constants import SimulationType
+
 
 class Simulator(ABC):
     """
@@ -120,7 +122,7 @@ class TowerOfHanoiSimulator(Simulator):
     1 (smallest) to $N$ (largest), where the smallest disk is on top of the stack.
     """
 
-    type = "TowerOfHanoi"  # Type identifier for Tower of Hanoi simulator
+    type = SimulationType.TowerOfHanoi
 
     def __init__(self, N: int):
         super().__init__(N)
@@ -294,7 +296,7 @@ class RiverCrossingSimulator(Simulator):
     - The boat cannot go empty.
     """
 
-    type = "RiverCrossing"  # Type identifier for River Crossing simulator
+    type = SimulationType.RiverCrossing
 
     def __init__(self, N: int, k: int = 3):
         """
@@ -497,12 +499,12 @@ class RiverCrossingSimulator(Simulator):
             return False
 
 
-def create_simulator(simulator_type: str, params: Dict[str, Any]) -> Simulator:
+def create_simulator(simulator_type: SimulationType, params: Dict[str, Any]) -> Simulator:
     """
     Factory function to create a simulator of the specified type with the given parameters.
 
     Args:
-        simulator_type: Type of simulator to create (TowerOfHanoi or RiverCrossing)
+        simulator_type: Type of simulator to create (SimulationType enum)
         params: Dictionary of parameters for the simulator
 
     Returns:
@@ -511,9 +513,9 @@ def create_simulator(simulator_type: str, params: Dict[str, Any]) -> Simulator:
     Raises:
         ValueError: If the simulator type is unknown
     """
-    if simulator_type == TowerOfHanoiSimulator.type:
+    if simulator_type == SimulationType.TowerOfHanoi:
         return TowerOfHanoiSimulator(N=params["N"])
-    elif simulator_type == RiverCrossingSimulator.type:
+    elif simulator_type == SimulationType.RiverCrossing:
         return RiverCrossingSimulator(N=params["N"], k=params.get("k", 3))
     else:
         raise ValueError(f"Unknown simulator type: {simulator_type}")

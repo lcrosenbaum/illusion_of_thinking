@@ -12,9 +12,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from fastmcp import FastMCP
 
+from illusion_of_thinking.constants import SimulationType
 from illusion_of_thinking.simulators import (
     RiverCrossingSimulator,
-    Simulator,
     TowerOfHanoiSimulator,
     create_simulator,
 )
@@ -27,8 +27,9 @@ logger = logging.getLogger(__name__)
 class SimulationEnvironment:
     """A simulation environment that holds a simulator instance and its metadata."""
 
-    def __init__(self, simulator_type: str, simulator_params: Dict[str, Any]):
+    def __init__(self, simulator_type: SimulationType, simulator_params: Dict[str, Any]):
         """Initialize a simulation environment with a specific simulator type and parameters."""
+
         self.simulator = create_simulator(simulator_type, simulator_params)
         self.id = str(uuid.uuid4())
         self.last_accessed = time.time()  # Add timestamp for tracking last access
@@ -53,7 +54,7 @@ class SimulationManager:
         self.inactive_threshold: int = 180  # Two minutes in seconds
 
     def create_environment(
-        self, simulator_type: str, simulator_params: Dict[str, Any]
+        self, simulator_type: SimulationType, simulator_params: Dict[str, Any]
     ) -> SimulationEnvironment:
         """Create a new simulation environment and register it."""
         # Clean up inactive environments
@@ -115,9 +116,9 @@ def init_simulator(simulator_type: str, N: int, k: Optional[int] = None) -> Dict
     Returns:
         Dictionary containing environment ID, token, simulator type, and parameters
     """
-    if simulator_type not in [TowerOfHanoiSimulator.type, RiverCrossingSimulator.type]:
+    if simulator_type not in [t.name for t in SimulationType]:
         return {
-            "error": f"Invalid simulator type. Must be '{TowerOfHanoiSimulator.type}' or '{RiverCrossingSimulator.type}'"
+            "error": f"Invalid simulator type. Must be one of {[t.name for t in SimulationType]}"
         }
 
     if N < 1:
@@ -132,11 +133,13 @@ def init_simulator(simulator_type: str, N: int, k: Optional[int] = None) -> Dict
     if k is not None:
         simulator_params["k"] = k
 
-    environment = simulation_manager.create_environment(simulator_type, simulator_params)
+    environment = simulation_manager.create_environment(
+        SimulationType[simulator_type], simulator_params
+    )
 
     return {
         "env_id": environment.id,
-        "simulator_type": environment.simulator_type,
+        "simulator_type": environment.simulator_type.name,
         "simulator_params": environment.simulator_params,
     }
 
@@ -165,21 +168,9 @@ def execute_moves(env_id: str, moves: Union[List[List[int]], List[List[str]]]) -
     move_results = []
     for i, move in enumerate(moves):
         # Convert move to appropriate type if necessary
-        move_was_successful = False
-        if (
-            isinstance(simulator, TowerOfHanoiSimulator)
-            and isinstance(move, list)
-            and len(move) == 3
-        ):
-            # Convert to tuple for TowerOfHanoi
-            move_tuple = tuple(move)
-            move_was_successful = simulator.execute_move(move_tuple)
-        else:
-            move_was_successful = simulator.execute_move(move)
-
+        move_was_successful = simulator.execute_move(move)
         move_results.append({"move_index": i, "move": move, "successful": move_was_successful})
 
-        # Stop execution if a move fails
         if not move_was_successful:
             break
 
@@ -248,7 +239,7 @@ def get_state(env_id: str) -> Dict[str, Any]:
         return {"error": "Environment not found"}
 
     return {
-        "simulator_type": environment.simulator_type,
+        "simulator_type": environment.simulator_type.name,
         "simulator_params": environment.simulator_params,
         "state": environment.simulator.state,
         "goal_reached": environment.simulator.is_goal_reached(),

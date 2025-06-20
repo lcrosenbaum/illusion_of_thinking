@@ -8,6 +8,8 @@ import pytest
 import pytest_asyncio
 from fastmcp import Client
 
+from illusion_of_thinking.constants import SimulationType
+
 
 @pytest_asyncio.fixture
 async def client():
@@ -59,10 +61,12 @@ async def call_tool(client: Client, tool_name: str, args: Dict[str, Any]) -> Dic
 async def test_init_simulator(client):
     """Test initializing a Tower of Hanoi simulator."""
     # Initialize a Tower of Hanoi simulator
-    result = await call_tool(client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3})
+    result = await call_tool(
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
+    )
 
     assert "env_id" in result
-    assert result["simulator_type"] == "TowerOfHanoi"
+    assert result["simulator_type"] == SimulationType.TowerOfHanoi.name
     assert result["simulator_params"] == {"N": 3}
 
 
@@ -71,17 +75,19 @@ async def test_init_river_crossing(client):
     """Test initializing a River Crossing simulator."""
     # Initialize a River Crossing simulator
     result = await call_tool(
-        client, "init_simulator", {"simulator_type": "RiverCrossing", "N": 2, "k": 2}
+        client,
+        "init_simulator",
+        {"simulator_type": SimulationType.RiverCrossing.name, "N": 2, "k": 2},
     )
 
     assert "env_id" in result
-    assert result["simulator_type"] == "RiverCrossing"
+    assert result["simulator_type"] == SimulationType.RiverCrossing.name
     assert result["simulator_params"] == {"N": 2, "k": 2}
 
     # Verify the environment exists by checking state resource
     env_id = result["env_id"]
     state_data = await call_tool(client, "get_state", {"env_id": env_id})
-    assert state_data["simulator_type"] == "RiverCrossing"
+    assert state_data["simulator_type"] == SimulationType.RiverCrossing.name
     assert state_data["simulator_params"] == {"N": 2, "k": 2}
     assert state_data["goal_reached"] is False
 
@@ -90,16 +96,18 @@ async def test_init_river_crossing(client):
 async def test_init_hanoi(client):
     """Test initializing a River Crossing simulator."""
     # Initialize a River Crossing simulator
-    result = await call_tool(client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 2})
+    result = await call_tool(
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 2}
+    )
 
     assert "env_id" in result
-    assert result["simulator_type"] == "TowerOfHanoi"
+    assert result["simulator_type"] == SimulationType.TowerOfHanoi.name
     assert result["simulator_params"] == {"N": 2}
 
     # Verify the environment exists by checking state resource
     env_id = result["env_id"]
     state_data = await call_tool(client, "get_state", {"env_id": env_id})
-    assert state_data["simulator_type"] == "TowerOfHanoi"
+    assert state_data["simulator_type"] == SimulationType.TowerOfHanoi.name
     assert state_data["simulator_params"] == {"N": 2}
     assert state_data["goal_reached"] is False
 
@@ -113,13 +121,17 @@ async def test_init_simulator_validation(client):
     assert "Invalid simulator type" in result["error"]
 
     # Test with invalid N value
-    result = await call_tool(client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 0})
+    result = await call_tool(
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 0}
+    )
     assert "error" in result
     assert "N must be at least 1" in result["error"]
 
     # Test with invalid k value
     result = await call_tool(
-        client, "init_simulator", {"simulator_type": "RiverCrossing", "N": 2, "k": 0}
+        client,
+        "init_simulator",
+        {"simulator_type": SimulationType.RiverCrossing.name, "N": 2, "k": 0},
     )
     assert "error" in result
     assert "k must be at least 1" in result["error"]
@@ -130,7 +142,7 @@ async def test_execute_moves_tower_of_hanoi(client):
     """Test executing a move in the Tower of Hanoi simulator."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -153,7 +165,9 @@ async def test_execute_moves_river_crossing(client):
     """Test executing a move in the River Crossing simulator."""
     # Initialize a River Crossing simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "RiverCrossing", "N": 2, "k": 2}
+        client,
+        "init_simulator",
+        {"simulator_type": SimulationType.RiverCrossing.name, "N": 2, "k": 2},
     )
     env_id = init_result["env_id"]
 
@@ -179,7 +193,7 @@ async def test_execute_moves_validation(client):
     """Test validation when executing a move."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -204,7 +218,7 @@ async def test_reset_simulator(client):
     """Test resetting a simulator."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -227,7 +241,7 @@ async def test_reset_simulator_custom_state(client):
     """Test resetting a simulator to a custom state."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -249,7 +263,7 @@ async def test_reset_simulator_validation(client):
     """Test validation when resetting a simulator."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -276,7 +290,7 @@ async def test_state_resource(client):
     """Test accessing the state resource."""
     # Initialize a Tower of Hanoi simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
     env_id = init_result["env_id"]
 
@@ -295,7 +309,7 @@ async def test_state_resource_validation(client):
     """Test validation when accessing the state resource."""
     # Initialize a simulator
     init_result = await call_tool(
-        client, "init_simulator", {"simulator_type": "TowerOfHanoi", "N": 3}
+        client, "init_simulator", {"simulator_type": SimulationType.TowerOfHanoi.name, "N": 3}
     )
 
     # Test with invalid env_id

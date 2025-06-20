@@ -10,12 +10,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from smolagents import Tool
 
-from illusion_of_thinking.simulators import (
-    RiverCrossingSimulator,
-    Simulator,
-    TowerOfHanoiSimulator,
-    create_simulator,
-)
+from .constants import SimulationType
+from .simulators import RiverCrossingSimulator, Simulator, TowerOfHanoiSimulator, create_simulator
 
 # Global variable to store the current simulator
 current_simulator = None
@@ -42,7 +38,10 @@ class CreateSimulatorTool(Tool):
     inputs = {
         "simulator_type": {
             "type": "string",
-            "description": "Type of simulator to initialize (TowerOfHanoi or RiverCrossing)",
+            "description": (
+                f"Type of simulator to initialize ({SimulationType.TowerOfHanoi.name} "
+                f"or {SimulationType.RiverCrossing.name})"
+            ),
         },
         "N": {
             "type": "integer",
@@ -50,7 +49,10 @@ class CreateSimulatorTool(Tool):
         },
         "k": {
             "type": "integer",
-            "description": "For RiverCrossing, the maximum number of passengers the boat can carry",
+            "description": (
+                f"For {SimulationType.RiverCrossing.name}, the maximum number of "
+                "passengers the boat can carry"
+            ),
             "optional": True,
             "nullable": True,
         },
@@ -58,21 +60,25 @@ class CreateSimulatorTool(Tool):
     output_type = "object"
 
     def forward(self, simulator_type: str, N: int, k: Optional[int] = None) -> Dict[str, Any]:
-        """
+        f"""
         Initialize a simulator environment.
 
         Args:
-            simulator_type: Type of simulator to initialize (TowerOfHanoi or RiverCrossing)
+            simulator_type: Type of simulator to initialize ({SimulationType.TowerOfHanoi.name} or
+                            {SimulationType.RiverCrossing.name})
             N: Size parameter defining the scale of the simulation
-            k: For RiverCrossing, the maximum number of passengers the boat can carry
+            k: For {SimulationType.RiverCrossing.name}, the maximum number of passengers the boat 
+               can carry
 
         Returns:
             Dictionary containing simulator type and parameters
         """
-        if simulator_type not in [TowerOfHanoiSimulator.type, RiverCrossingSimulator.type]:
+        if simulator_type not in [t.name for t in SimulationType]:
             return {
-                "error": f"Invalid simulator type. Must be '{TowerOfHanoiSimulator.type}' or '{RiverCrossingSimulator.type}'"
+                "error": (f"Invalid simulator type. Must be in '{[t.name for t in SimulationType]}")
             }
+
+        simulator_type = SimulationType[simulator_type]
 
         if N < 1:
             return {"error": "N must be at least 1"}
@@ -88,7 +94,7 @@ class CreateSimulatorTool(Tool):
             simulator = create_simulator(simulator_type, params)
             set_current_simulator(simulator)
             return {
-                "simulator_type": simulator.type,
+                "simulator_type": simulator.type.name,
                 "simulator_params": simulator.params,
             }
         except ValueError as e:
@@ -104,11 +110,11 @@ class ResetSimulatorTool(Tool):
     inputs = {
         "state": {
             "type": "any",
-            "description": """
+            "description": f"""
             Optional state to reset to. If not provided, reset to default initial state.
             Can be one of:
-            - TowerOfHanoi state: List of 3 lists
-            - RiverCrossing state: [boat_position, entity_positions]
+            - {SimulationType.TowerOfHanoi.name} state: List of 3 lists
+            - {SimulationType.RiverCrossing.name} state: [boat_position, entity_positions]
             - "default" or None: Reset to default initial state
             """,
             "optional": True,
@@ -170,7 +176,7 @@ class GetStateTool(Tool):
             return {"error": "No simulator has been initialized"}
 
         return {
-            "simulator_type": simulator.type,
+            "simulator_type": simulator.type.name,
             "simulator_params": simulator.params,
             "state": simulator.state,
             "goal_reached": simulator.is_goal_reached(),
@@ -186,10 +192,10 @@ class ExecuteMovesTool(Tool):
     inputs = {
         "moves": {
             "type": "array",
-            "description": """
+            "description": f"""
             List of moves to execute in sequence.
-            - For TowerOfHanoi: [[disk_id, from_peg, to_peg], ...]
-            - For RiverCrossing: [["A_1", "a_1"], ...]
+            - For {SimulationType.TowerOfHanoi.name}: [[disk_id, from_peg, to_peg], ...]
+            - For {SimulationType.RiverCrossing.name}: [["A_1", "a_1"], ...]
             """,
         },
     }
@@ -212,22 +218,9 @@ class ExecuteMovesTool(Tool):
 
         move_results = []
         for i, move in enumerate(moves):
-            # Convert move to appropriate type if necessary
-            move_was_successful = False
-            if (
-                isinstance(simulator, TowerOfHanoiSimulator)
-                and isinstance(move, list)
-                and len(move) == 3
-            ):
-                # Convert to tuple for TowerOfHanoi
-                move_tuple = tuple(move)
-                move_was_successful = simulator.execute_move(move_tuple)
-            else:
-                move_was_successful = simulator.execute_move(move)
-
+            move_was_successful = simulator.execute_move(move)
             move_results.append({"move_index": i, "move": move, "successful": move_was_successful})
 
-            # Stop execution if a move fails
             if not move_was_successful:
                 break
 
