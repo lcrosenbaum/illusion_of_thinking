@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 from smolagents import Tool
 
 from .constants import SimulationType
-from .simulators import RiverCrossingSimulator, Simulator, TowerOfHanoiSimulator, create_simulator
+from .simulators import Simulator, create_simulator
 
 # Global variable to store the current simulator
 current_simulator = None
@@ -233,3 +233,12 @@ class ExecuteMovesTool(Tool):
             "goal_reached": goal_reached,
             "all_moves_successful": all(result["successful"] for result in move_results),
         }
+
+
+def get_tools() -> List[Tool]:
+    return [
+        CreateSimulatorTool(),
+        GetStateTool(),
+        ResetSimulatorTool(),
+        ExecuteMovesTool(),
+    ]

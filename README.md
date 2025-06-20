@@ -20,8 +20,30 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry install
 
 # Activate the virtual environment
-poetry shell
+poetry env activate
 ```
+
+## Running single experiment
+
+```bash
+python -m illusion_of_thinking.run_experiments
+``` 
+
+### Command-line options
+
+- `--simulator_type`: Type of simulator to use. Choices: `TowerOfHanoi`, `RiverCrossing`. **(required)**
+- `--N`: Number of disks for Tower of Hanoi or number of actors for River Crossing. **(required)**
+- `--k`: Maximum boat capacity for River Crossing (ignored for Tower of Hanoi). Default: `2`.
+- `--use_tools`: Whether to use simulator tools. (flag)
+- `--use_thinking`: Whether to use a thinking model or not. (flag)
+- `--output_folder`: Output folder for experiment results. Default: `logs`. **(required)**
+
+Example usage:
+```bash
+MISTRAL_API_KEY=<your_api_key> python -m illusion_of_thinking.run_experiment --simulator_type TowerOfHanoi --N 3 --output_folder results
+```
+
+
 
 ## Running tests
 
@@ -30,6 +52,6 @@ poetry shell
 poetry run pytest
 ```
 
-## MCP Server & API
+## Documentation
 
-- [MCP Server Documentation](docs/mcp_server.md): Full details on the Model Context Protocol server, supported tools/resources, and client usage examples.
+A detailed on the implementations done in this repository can be found [here](docs/index.md).

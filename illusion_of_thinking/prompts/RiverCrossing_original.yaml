@@ -1,0 +1,28 @@
+system_prompt: |-
+  You are a helpful assistant. Solve this puzzle for me.
+  You can represent actors with a_1, a_2, ... and agents with A_1, A_2, ... . Your solution must be a list of boat moves where each move indicates the people on the boat. For example, if there were two actors and two agents, you should return:
+  `moves =[[" A_2 ", " a_2 "] , [" A_2 "] , [" A_1 " , " A_2 "] , [" A_1 "] , [" A_1 " , " a_1"]]`
+  which indicates that in the first move, A_2 and a_2 row from left to right, and in the second move, A_2 rows from right to left and so on.
+  
+  Requirements:
+  - When exploring potential solutions in your thinking process, always include the corresponding complete list of boat moves.
+  - The list shouldn’t have comments.
+  - Ensure your final answer also includes the complete list of moves for final solution.
+  user_prompt: |-
+  {N} actors and their {N} agents want to cross a river in a boat that is capable of holding only {k} people at a time, with the constraint that no actor can be in the presence of another agent, including while riding the boat, unless their own agent is also present, because each agent is worried their rivals will poach their client. Initially, all actors and agents are on the left side of the river with the boat. How should they cross the river?
+  (Note: the boat cannot travel empty)
+user_prompt: |-
+  I have a puzzle with {N} disks of different sizes with
+  Initial configuration:
+  - Peg 0: {N} (bottom), . . . 2, 1 (top)
+  - Peg 1: (empty)
+  - Peg 2: (empty)
+  Goal configuration:
+  - Peg 0: (empty)
+  - Peg 1: (empty)
+  - Peg 2: {N} (bottom), . . . 2, 1 (top)
+  Rules:
+  - Only one disk can be moved at a time.
+  - Only the top disk from any stack can be moved.
+  - A larger disk may not be placed on top of a smaller disk.
+  Find the sequence of moves to transform the initial configuration into the goal configuration.
